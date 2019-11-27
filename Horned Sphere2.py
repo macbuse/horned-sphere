@@ -13,12 +13,12 @@ class HornedSphere():
     def make_arms(self, verts):
     	'''verts a list of ndarray shape = (3)'''
    
-    	RZ = np.array([[0,-1,0], [1,0,0], [0,0,1]])
+    	RZ = np.array([[0,1,0], [-1,0,0], [0,0,1]])
     	Rz = np.array([[0,1,0], [-1,0,0], [0,0,1]])
-    	Rx = np.array([[1,0,0], [0,0,-1], [0,1,0]])
+    	Ry = np.array([[0,0,-1], [0,-1,0], [1,0,0]])
     	
     	RL = RZ
-    	RR = np.dot(Rz,Rx)
+    	RR = np.dot(Ry,Rz)
     	
     	pts = []
     	pts.extend([ self.scale*np.dot( v-self.Ov, RL) + self.Lv for v in  verts])
@@ -47,21 +47,21 @@ class HornedSphere():
                           
 
 model = HornedSphere()       
-
+depth = 3
 arm_pts = model.pts[:]
 arm_pts.extend(model.make_arms( model.pts))
-arm_pts.extend(model.make_arms( arm_pts))
-arm_pts.extend(model.make_arms( arm_pts))
+for k in range(depth-1):
+    arm_pts.extend(model.make_arms( arm_pts))
+
 
 bpy.ops.mesh.primitive_plane_add(location=[0,0,-3]) 
 me = bpy.context.object.data
 bm = bmesh.new() 
 
 verts = [bm.verts.new(v[:]) for v in arm_pts]
-for k in range(15):
+for k in range( 27):
     for L in model.face_list[:] + k*len(model.pts) :
         bm.faces.new([verts[k] for k in L ])
-
 bm.to_mesh(me)
 bm.free()  # free and prevent further access
 
