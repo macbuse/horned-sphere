@@ -21,8 +21,8 @@ class HornedSphere():
     	RR = np.dot(Ry,Rz)
     	
     	pts = []
-    	pts.extend([ self.scale*np.dot( v-self.Ov, RL) + self.Lv for v in  verts])
-    	pts.extend([ self.scale*np.dot( v-self.Ov, RR) + self.Rv for v in verts])
+    	pts.extend([ self.scale*np.dot( v-self.center, RL) + self.Lv for v in  verts])
+    	pts.extend([ self.scale*np.dot( v-self.center, RR) + self.Rv for v in verts])
     	return pts
 
     def get_motif(self):
@@ -34,9 +34,9 @@ class HornedSphere():
         Lv = .25*sum( pts[:4])
         Rv = .25*sum( pts[-4:])
         
-        #this is bad I sould pass this in the json
-        joint = [ pts[j] for j in [20, 21, 24, 25] ]   
-        self.Ov = sum(joint)/len(joint)
+        #get this in the json
+        joint = [ pts[j] for j in data['selected'] ] 
+        self.center = sum(joint)/len(joint)
        
         pts[:5] = [ self.scale*(v- Lv) + Lv for v in pts[:5] ]
         pts[-5:] = [self.scale*(v- Rv) + Rv for v in pts[-5:] ]
@@ -53,12 +53,12 @@ arm_pts.extend(model.make_arms( model.pts))
 for k in range(depth-1):
     arm_pts.extend(model.make_arms( arm_pts))
 
-
 bpy.ops.mesh.primitive_plane_add(location=[0,0,-3]) 
 me = bpy.context.object.data
 bm = bmesh.new() 
 
 verts = [bm.verts.new(v[:]) for v in arm_pts]
+#need to change 27
 for k in range( 27):
     for L in model.face_list[:] + k*len(model.pts) :
         bm.faces.new([verts[k] for k in L ])
